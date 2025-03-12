@@ -12,25 +12,40 @@ if not BEARER_TOKEN:
 # 取得したいTwitterユーザーのスクリーンネーム
 USERNAME = "jeleechandayo"
 
-# Twitter API のエンドポイント（自己紹介文を取得）
-url = f"https://api.twitter.com/2/users/by/username/{USERNAME}?user.fields=description"
-
 # APIリクエストのヘッダー
 headers = {
     "Authorization": f"Bearer {BEARER_TOKEN}",
 }
 
-try:
-    response = requests.get(url, headers=headers)
-    response_json = response.json()
+# @jeleechandayo のユーザーIDを取得
+url_user = f"https://api.twitter.com/2/users/by/username/{USERNAME}"
+response_user = requests.get(url_user, headers=headers)
+user_data = response_user.json()
 
-    if response.status_code == 200:
-        user_data = response_json.get("data", {})
-        bio = user_data.get("description", "No bio available")
-        print(f"User Bio: {bio}")
-    else:
-        print(f"Error: HTTP {response.status_code}")
-        print("Response:", response_json)  # エラーメッセージを表示
+if response_user.status_code == 200:
+    user_id = user_data["data"]["id"]
+    print(f"User ID: {user_id}")
+else:
+    print(f"Error fetching user ID: {response_user.status_code}")
+    print("Response:", user_data)
+    exit(1)
 
-except Exception as e:
-    print("Error:", str(e))  # 例外の詳細を表示
+# フォロワー取得（1人だけ）
+url_followers = f"https://api.twitter.com/2/users/{user_id}/followers?max_results=1"
+response_followers = requests.get(url_followers, headers=headers)
+followers_data = response_followers.json()
+
+if response_followers.status_code == 200 and "data" in followers_data:
+    follower = followers_data["data"][0]  # 1人目のフォロワー
+    follower_id = follower["id"]
+    follower_name = follower["name"]
+    follower_username = follower["username"]
+    print(f"Follower: {follower_name} (@{follower_username})")
+
+    # フォロワーの自己紹介を取得
+    follower_bio = follower.get("description", "No bio available.")
+    print(f"Follower Bio: {follower_bio}")
+
+else:
+    print(f"Error fetching followers: {response_followers.status_code}")
+    print("Response:", followers_data)
