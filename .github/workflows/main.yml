@@ -2,7 +2,7 @@ name: Fetch Twitter Bio
 
 on:
   schedule:
-    - cron: "* * 1 * *"
+ #   - cron: "* * 1 * *"
   workflow_dispatch:  # 手動実行も可能
 
 jobs:
